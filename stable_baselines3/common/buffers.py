@@ -411,14 +411,14 @@ class RolloutBuffer(BaseBuffer):
             for step in range(n_steps):
                 # Get the next value
                 if step == n_steps - 1:
-                    next_non_terminal = 1.0 - dones
-                    next_value = last_values
+                    next_non_terminal = 1.0 - self.episode_starts[-1]
+                    next_value = self.values[-1]
                 else:
                     next_non_terminal = 1.0 - self.episode_starts[step + 1]
                     next_value = self.values[step + 1]
                     
                 # Calculate the returns
-                next_value = self.rewards[step] + self.gamma * next_value * self.episode_starts[step]
+                next_value = self.rewards[step] + self.gamma * next_value * next_non_terminal
                 returns.insert(0, next_value)
             
             # Store the returns
