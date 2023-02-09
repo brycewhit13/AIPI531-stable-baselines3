@@ -418,9 +418,9 @@ class RolloutBuffer(BaseBuffer):
                     next_non_terminal = 1.0 - self.episode_starts[step + 1]
                     next_values = self.values[step + 1]
                     
-                # Cal
-                R = self.rewards[step] + self.gamma * R * self.episode_starts[step]
-                returns.insert(0, R)
+                # Calculate the returns
+                next_values = self.rewards[step] + self.gamma * next_values * self.episode_starts[step]
+                returns.insert(0, next_values)
             
             # Store the returns
             self.returns = returns
