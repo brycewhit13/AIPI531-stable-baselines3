@@ -344,7 +344,6 @@ class RolloutBuffer(BaseBuffer):
         gae_lambda: float = 1,
         gamma: float = 0.99,
         n_envs: int = 1,
-        return_algorithm: str = "GAE",
     ):
         super().__init__(buffer_size, observation_space, action_space, device, n_envs=n_envs)
         self.gae_lambda = gae_lambda
@@ -352,7 +351,6 @@ class RolloutBuffer(BaseBuffer):
         self.observations, self.actions, self.rewards, self.advantages = None, None, None, None
         self.returns, self.episode_starts, self.values, self.log_probs = None, None, None, None
         self.generator_ready = False
-        self.return_algorithm = return_algorithm
         self.reset()
 
     def reset(self) -> None:
@@ -386,31 +384,23 @@ class RolloutBuffer(BaseBuffer):
         :param last_values: state value estimation for the last step (one for each env)
         :param dones: if the last step was a terminal step (one bool for each env).
         """
-        # Check the return algorithm
-        if self.return_algorithm == 'GAE':
-            # Convert to numpy
-            last_values = last_values.clone().cpu().numpy().flatten()
+        # Convert to numpy
+        last_values = last_values.clone().cpu().numpy().flatten()
 
-            last_gae_lam = 0
-            for step in reversed(range(self.buffer_size)):
-                if step == self.buffer_size - 1:
-                    next_non_terminal = 1.0 - dones
-                    next_values = last_values
-                else:
-                    next_non_terminal = 1.0 - self.episode_starts[step + 1]
-                    next_values = self.values[step + 1]
-                delta = self.rewards[step] + self.gamma * next_values * next_non_terminal - self.values[step]
-                last_gae_lam = delta + self.gamma * self.gae_lambda * next_non_terminal * last_gae_lam
-                self.advantages[step] = last_gae_lam
-            # TD(lambda) estimator, see Github PR #375 or "Telescoping in TD(lambda)"
-            # in David Silver Lecture 4: https://www.youtube.com/watch?v=PnHCvfgC_ZA
-            self.returns = self.advantages + self.values
-        elif self.return_algorithm == 'n_step':
-            raise NotImplementedError
-        elif self.return_algorithm == 'vanilla':
-            raise NotImplementedError
-        else:
-            raise ValueError("Invalid return algorithm")
+        last_gae_lam = 0
+        for step in reversed(range(self.buffer_size)):
+            if step == self.buffer_size - 1:
+                next_non_terminal = 1.0 - dones
+                next_values = last_values
+            else:
+                next_non_terminal = 1.0 - self.episode_starts[step + 1]
+                next_values = self.values[step + 1]
+            delta = self.rewards[step] + self.gamma * next_values * next_non_terminal - self.values[step]
+            last_gae_lam = delta + self.gamma * self.gae_lambda * next_non_terminal * last_gae_lam
+            self.advantages[step] = last_gae_lam
+        # TD(lambda) estimator, see Github PR #375 or "Telescoping in TD(lambda)"
+        # in David Silver Lecture 4: https://www.youtube.com/watch?v=PnHCvfgC_ZA
+        self.returns = self.advantages + self.values
 
     def add(
         self,
