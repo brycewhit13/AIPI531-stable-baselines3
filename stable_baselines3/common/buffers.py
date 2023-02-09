@@ -404,7 +404,6 @@ class RolloutBuffer(BaseBuffer):
             self.returns = self.advantages + self.values
             
         elif(return_algorithm == "n-step"):
-            print(f"Performing n-step return with {n_steps}")
             last_values = last_values.clone().cpu().numpy().flatten()
             returns = []
             
