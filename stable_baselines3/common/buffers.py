@@ -404,8 +404,9 @@ class RolloutBuffer(BaseBuffer):
                     self.advantages[step] = last_gae_lam
                     
                 elif(return_algorithm == "n-step"):
-                    R = self.rewards[step] + self.gamma * last_values * next_non_terminal
-                    self.advantages[step] = R - self.values[step]
+                    R = last_values
+                    R = self.rewards[step] + self.gamma * R * next_non_terminal
+                    self.advantages[step] = R + self.values[step]
                 
                 # Invalid return algorithm passed
                 else:
