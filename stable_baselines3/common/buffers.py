@@ -419,7 +419,7 @@ class RolloutBuffer(BaseBuffer):
                     
                 # Calculate the returns
                 next_value = self.rewards[step] + self.gamma * next_value * self.episode_starts[step]
-                returns.insert(0, next_values)
+                returns.insert(0, next_value)
             
             # Store the returns
             self.returns = np.array(returns)
