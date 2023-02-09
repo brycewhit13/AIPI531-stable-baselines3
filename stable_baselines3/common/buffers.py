@@ -384,6 +384,9 @@ class RolloutBuffer(BaseBuffer):
         :param last_values: state value estimation for the last step (one for each env)
         :param dones: if the last step was a terminal step (one bool for each env).
         """
+        # TODO: Remove
+        print("Hello World")
+        
         # Convert to numpy
         last_values = last_values.clone().cpu().numpy().flatten()
 
