@@ -210,7 +210,7 @@ class OnPolicyAlgorithm(BaseAlgorithm):
             # Compute value for the last timestep
             values = self.policy.predict_values(obs_as_tensor(new_obs, self.device))
 
-        rollout_buffer.compute_returns_and_advantage(last_values=values, dones=dones, return_algorithm=return_algorithm, n_steps=n_steps)
+        rollout_buffer.compute_returns_and_advantage(last_values=values, dones=dones, return_algorithm=return_algorithm)
 
         callback.on_rollout_end()
 
@@ -232,7 +232,6 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         reset_num_timesteps: bool = True,
         progress_bar: bool = False,
         return_algorithm: str = 'GAE',
-        n_steps: int = 1
     ) -> SelfOnPolicyAlgorithm:
         iteration = 0
 

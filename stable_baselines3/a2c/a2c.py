@@ -197,5 +197,4 @@ class A2C(OnPolicyAlgorithm):
             reset_num_timesteps=reset_num_timesteps,
             progress_bar=progress_bar,
             return_algorithm=self.return_algorithm,
-            n_steps=self.n_steps,
         )

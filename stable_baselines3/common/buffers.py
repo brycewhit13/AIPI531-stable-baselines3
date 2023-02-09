@@ -365,7 +365,7 @@ class RolloutBuffer(BaseBuffer):
         self.generator_ready = False
         super().reset()
 
-    def compute_returns_and_advantage(self, last_values: th.Tensor, dones: np.ndarray, return_algorithm: str = "GAE", n_steps: int = 1) -> None:
+    def compute_returns_and_advantage(self, last_values: th.Tensor, dones: np.ndarray, return_algorithm: str = "GAE") -> None:
         """
         Post-processing step: compute the lambda-return (TD(lambda) estimate)
         and GAE(lambda) advantage.
@@ -396,35 +396,24 @@ class RolloutBuffer(BaseBuffer):
                 else:
                     next_non_terminal = 1.0 - self.episode_starts[step + 1]
                     next_values = self.values[step + 1]
-                delta = self.rewards[step] + self.gamma * next_values * next_non_terminal - self.values[step]
-                last_gae_lam = delta + self.gamma * self.gae_lambda * next_non_terminal * last_gae_lam
-                self.advantages[step] = last_gae_lam
+                    
+                # Check what the return algorithm is and compute the advantage
+                if(return_algorithm == "GAE"):
+                    delta = self.rewards[step] + self.gamma * next_values * next_non_terminal - self.values[step]
+                    last_gae_lam = delta + self.gamma * self.gae_lambda * next_non_terminal * last_gae_lam
+                    self.advantages[step] = last_gae_lam
+                    
+                elif(return_algorithm == "n-step"):
+                    R = self.rewards[step] + self.gamma * last_values * next_non_terminal
+                    self.advantages[step] = R - self.values[step]
+                
+                # Invalid return algorithm passed
+                else:
+                    raise ValueError("Invalid return algorithm")
+                
             # TD(lambda) estimator, see Github PR #375 or "Telescoping in TD(lambda)"
             # in David Silver Lecture 4: https://www.youtube.com/watch?v=PnHCvfgC_ZA
             self.returns = self.advantages + self.values
-            
-        elif(return_algorithm == "n-step"):
-            last_values = last_values.clone().cpu().numpy().flatten()
-            returns = []
-            
-            # For each of the steps
-            for step in range(n_steps):
-                # Get the next value
-                if step == n_steps - 1:
-                    next_non_terminal = 1.0 - self.episode_starts[-1]
-                    next_value = self.values[-1]
-                else:
-                    next_non_terminal = 1.0 - self.episode_starts[step + 1]
-                    next_value = self.values[step + 1]
-                    
-                # Calculate the returns
-                next_value = self.rewards[step] + self.gamma * next_value * next_non_terminal
-                returns.insert(0, next_value)
-            
-            # Store the returns
-            self.returns = np.array(returns)
-        else:
-            raise ValueError("Unknown return algorithm")
 
     def add(
         self,
