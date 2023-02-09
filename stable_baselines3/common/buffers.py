@@ -398,14 +398,15 @@ class RolloutBuffer(BaseBuffer):
                     next_values = self.values[step + 1]
                     
                 # Check what the return algorithm is and compute the advantage
+                # GAE implemented by default in A2C
                 if(return_algorithm == "GAE"):
                     delta = self.rewards[step] + self.gamma * next_values * next_non_terminal - self.values[step]
                     last_gae_lam = delta + self.gamma * self.gae_lambda * next_non_terminal * last_gae_lam
                     self.advantages[step] = last_gae_lam
                     
+                # Added n-step algotihm
                 elif(return_algorithm == "n-step"):
-                    R = last_values
-                    R = self.rewards[step] + self.gamma * R * next_non_terminal
+                    R = self.rewards[step] + self.gamma * last_values * next_non_terminal
                     self.advantages[step] = R - self.values[step]
                 
                 # Invalid return algorithm passed
