@@ -409,7 +409,7 @@ class RolloutBuffer(BaseBuffer):
             returns = []
             
             # For each of the steps
-            for step in n_steps:
+            for step in range(n_steps):
                 # Get the next value
                 if step == n_steps - 1:
                     next_non_terminal = 1.0 - dones
