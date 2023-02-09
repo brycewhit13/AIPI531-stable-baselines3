@@ -128,6 +128,8 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         callback: BaseCallback,
         rollout_buffer: RolloutBuffer,
         n_rollout_steps: int,
+        return_algorithm: str = 'GAE',
+        n_steps: int = 1,
     ) -> bool:
         """
         Collect experiences using the current policy and fill a ``RolloutBuffer``.
@@ -208,7 +210,7 @@ class OnPolicyAlgorithm(BaseAlgorithm):
             # Compute value for the last timestep
             values = self.policy.predict_values(obs_as_tensor(new_obs, self.device))
 
-        rollout_buffer.compute_returns_and_advantage(last_values=values, dones=dones)
+        rollout_buffer.compute_returns_and_advantage(last_values=values, dones=dones, return_algorithm=return_algorithm, n_steps=n_steps)
 
         callback.on_rollout_end()
 
@@ -229,6 +231,8 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         tb_log_name: str = "OnPolicyAlgorithm",
         reset_num_timesteps: bool = True,
         progress_bar: bool = False,
+        return_algorithm: str = 'GAE',
+        n_steps: int = 1
     ) -> SelfOnPolicyAlgorithm:
         iteration = 0
 
@@ -243,7 +247,7 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         callback.on_training_start(locals(), globals())
 
         while self.num_timesteps < total_timesteps:
-            continue_training = self.collect_rollouts(self.env, callback, self.rollout_buffer, n_rollout_steps=self.n_steps)
+            continue_training = self.collect_rollouts(self.env, callback, self.rollout_buffer, n_rollout_steps=self.n_steps, return_algorithm=return_algorithm, n_steps=n_steps)
 
             if continue_training is False:
                 break

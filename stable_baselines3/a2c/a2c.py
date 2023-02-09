@@ -80,6 +80,7 @@ class A2C(OnPolicyAlgorithm):
         seed: Optional[int] = None,
         device: Union[th.device, str] = "auto",
         _init_setup_model: bool = True,
+        return_algorithm: str = "GAE",
     ):
         super().__init__(
             policy,
@@ -108,6 +109,7 @@ class A2C(OnPolicyAlgorithm):
         )
 
         self.normalize_advantage = normalize_advantage
+        self.return_algorithm = return_algorithm
 
         # Update optimizer inside the policy if we want to use RMSProp
         # (original implementation) rather than Adam
@@ -194,4 +196,6 @@ class A2C(OnPolicyAlgorithm):
             tb_log_name=tb_log_name,
             reset_num_timesteps=reset_num_timesteps,
             progress_bar=progress_bar,
+            return_algorithm=self.return_algorithm,
+            n_steps=self.n_steps,
         )
