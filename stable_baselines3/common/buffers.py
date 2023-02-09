@@ -404,7 +404,7 @@ class RolloutBuffer(BaseBuffer):
             self.returns = self.advantages + self.values
             
         elif(return_algorithm == "n-step"):
-            print("Performing n-step return with {n_steps}")
+            print(f"Performing n-step return with {n_steps}")
             last_values = last_values.clone().cpu().numpy().flatten()
             returns = []
             
@@ -423,7 +423,7 @@ class RolloutBuffer(BaseBuffer):
                 returns.insert(0, next_values)
             
             # Store the returns
-            self.returns = returns
+            self.returns = np.array(returns)
         else:
             raise ValueError("Unknown return algorithm")
 
